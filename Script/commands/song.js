@@ -6,30 +6,38 @@ const path = require('path'); // Path পরিচালনার জন্য �
 
 /**
  * GitHub থেকে বেস API URL ফেচ করে।
+ * ফেইল হলে একটি ফলব্যাক URL রিটার্ন করে।
  * @returns {Promise<string>} বেস API URL.
  */
 const baseApiUrl = async () => {
-  try {
-    const base = await axios.get(
-      `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
-    );
-    // যদি api প্রপার্টি না থাকে, তাহলে একটি এরর থ্রো করবে
-    if (!base.data || !base.data.api) {
-        throw new Error("Invalid response structure from base API URL.");
+    // ফলব্যাক URL - যদি GitHub থেকে ফেচ করা ব্যর্থ হয়
+    const FALLBACK_API_URL = "https://your-fallback-api-url.com"; // <--- আপনার পছন্দের API URL দিন!
+
+    try {
+        const base = await axios.get(
+            `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
+            { timeout: 5000 } // ৫ সেকেন্ডের টাইমআউট যোগ করা হয়েছে
+        );
+        
+        // Response ঠিক আছে কিনা তা নিশ্চিত করা
+        if (base.data && base.data.api) {
+            console.log("✅ API URL fetched successfully from GitHub.");
+            return base.data.api;
+        } else {
+            console.warn("⚠️ GitHub response was invalid. Falling back to default URL.");
+            return FALLBACK_API_URL;
+        }
+    } catch (error) {
+        // যদি Fetch করতে এরর হয় (যেমন: নেটওয়ার্ক বা DNS সমস্যা)
+        console.error("❌ Error fetching API URL from GitHub. Falling back:", error.message);
+        // যদি কোনো কারণে ফেইল হয়, তাহলে ফলব্যাক URL ব্যবহার করবে
+        return FALLBACK_API_URL; 
     }
-    return base.data.api;
-  } catch (error) {
-    console.error("Error fetching base API URL:", error.message);
-    // ফেইল হলে বা ত্রুটি হলে অপারেশন বন্ধ করার জন্য এরর থ্রো করা হয়েছে
-    throw new Error("Could not fetch the base API URL.");
-  }
 };
 
 /**
  * একটি URL থেকে ফাইল ডাউনলোড করে, লোকাল পাথে সেভ করে, এবং একটি রিডেবল স্ট্রিম রিটার্ন করে।
- * @param {string} url যে URL থেকে ডাউনলোড করতে হবে।
- * @param {string} fileName যে নামে ফাইলটি সেভ হবে (যেমন: 'audio.mp3')।
- * @returns {Promise<fs.ReadStream>} ডাউনলোড করা ফাইলের একটি রিডেবল স্ট্রিম।
+ * ... (বাকি ফাংশনটি অপরিবর্তিত) ...
  */
 async function dipto(url, fileName) {
   const filePath = path.join(__dirname, fileName);
@@ -57,10 +65,7 @@ async function dipto(url, fileName) {
 
 /**
  * একটি URL থেকে স্ট্রিম হিসাবে ফাইল ডাউনলোড করে এবং এর path প্রপার্টি সেট করে।
- * এটি মূলত Facebook API-এর অ্যাটাচমেন্ট মেকানিজমের জন্য ব্যবহৃত হয়।
- * @param {string} url যে URL থেকে ডাউনলোড করতে হবে।
- * @param {string} fileName স্ট্রিমের সাথে যুক্ত করা ফাইলের নাম।
- * @returns {Promise<import('axios').AxiosResponse['data'] & {path: string}>} 'path' প্রপার্টি সহ রেসপন্স স্ট্রিম।
+ * ... (বাকি ফাংশনটি অপরিবর্তিত) ...
  */
 async function diptoSt(url, fileName) {
   try {
@@ -80,7 +85,7 @@ async function diptoSt(url, fileName) {
 
 module.exports.config = {
   name: "song",
-  version: "2.1.2", // ভার্সন আপডেট করা হয়েছে
+  version: "2.1.3", // ভার্সন আপডেট করা হয়েছে
   aliases: ["music", "play"],
   credits: "RAHAT (Fixed by Gemini)",
   countDown: 5,
@@ -132,15 +137,11 @@ module.exports.run = async ({
       const baseUrl = await baseApiUrl();
       
       // API থেকে ডাউনলোড লিঙ্ক এবং তথ্য ফেচ
-      const {
-        data: {
-          title,
-          downloadLink,
-          quality
-        }
-      } = await axios.get(
+      const response = await axios.get(
         `${baseUrl}/ytDl3?link=${videoID}&format=mp3`
       );
+      
+      const { title, downloadLink, quality } = response.data;
 
       // ডাউনলোডিং মেসেজ
       await api.sendMessage({
@@ -204,15 +205,13 @@ module.exports.run = async ({
 
   } catch (err) {
     console.error("Error in 'song' run function:", err);
-    // যদি baseApiUrl ফেচ করতে ব্যর্থ হয় বা অন্য কোনো বড় এরর হয়
-    if (err.message && err.message.includes("Could not fetch the base API URL")) {
-      return api.sendMessage("❌ API URL পেতে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।", event.threadID, event.messageID);
+    // API রেসপন্স এরর হলে
+    if (err.response && err.response.status === 404) {
+         return api.sendMessage("❌ API বা সার্ভার থেকে কোনো ডেটা পাওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।", event.threadID, event.messageID);
     }
-    return api.sendMessage("❌ কমান্ড কার্যকরে একটি ত্রুটি হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।", event.threadID, event.messageID);
-  } finally {
-    // নিশ্চিত করুন যে রান ফাংশনের বাইরে ক্লিনআপ হচ্ছে না
-    // কারণ এটি শুধুমাত্র মেসেজ সেন্ড হওয়ার পর হওয়া উচিত যা callback-এ আছে।
-  }
+    // ফলব্যাক URL ব্যবহারের পরেও যদি কোনো এরর হয়
+    return api.sendMessage("❌ কমান্ড কার্যকরে একটি সাধারণ ত্রুটি হয়েছে। সমস্যাটি নেটওয়ার্ক বা API এর হতে পারে।", event.threadID, event.messageID);
+  } 
 };
 
 // --- Reply Handler ---
@@ -252,13 +251,9 @@ module.exports.handleReply = async ({
       await api.sendMessage(`🎶 **${infoChoice.title}** ডাউনলোড করার প্রস্তুতি চলছে...`, event.threadID, event.messageID);
       
       const baseUrl = await baseApiUrl();
-      const {
-        data: {
-          title,
-          downloadLink,
-          quality
-        }
-      } = await axios.get(`${baseUrl}/ytDl3?link=${idvideo}&format=mp3`);
+      const response = await axios.get(`${baseUrl}/ytDl3?link=${idvideo}&format=mp3`);
+      
+      const { title, downloadLink, quality } = response.data;
 
       // নির্বাচিত অডিও ডাউনলোড
       const audioStream = await dipto(downloadLink, 'audio.mp3'); 
