@@ -5,7 +5,7 @@ module.exports.config = {
   name: "autotime",
   version: "1.0.0",
   permission: 0,
-  credits: "rabbi ",
+  credits: "Saiful ",
   description: "প্রতি ঘন্টায় ইসলামিক বার্তা পাঠায় (বাংলা তারিখ সহ, Asia/Dhaka)",
   prefix: true,
   commandCategory: "user",
@@ -99,9 +99,9 @@ module.exports.onLoad = function ({ api }) {
       const finalMessage = islamicChat + '\n' + (Array.isArray(nazruld.message) ? nazruld.message.join('\n') : nazruld.message) + `
 
 ━━━━━━━━━━━━━━━━━━  
-👑𝐁𝐨𝐭 𝐎𝐰𝐧𝐞𝐫☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎ 
+👑 𝐁𝐨𝐭 𝐎𝐰𝐧𝐞𝐫 ➠ ☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎  
 
-💥𝐂𝐫𝐞𝐚𝐭𝗼𝐫 ☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎💥 
+🌟 𝐂𝐫𝐞𝐚𝐭𝗼𝐫 ━ ☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎ 🌟  
 ━━━━━━━━━━━━━━━━━━`;
 
       if (Array.isArray(module.exports.config.sendTo) && module.exports.config.sendTo.length > 0) {
