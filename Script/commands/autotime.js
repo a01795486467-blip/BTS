@@ -4,10 +4,10 @@ const moment = require('moment-timezone');
 
 module.exports.config = {
     name: 'autosent',
-    version: '11.1.0',
+    version: '11.1.1', // Updated version
     hasPermssion: 0,
-    credits: 'Mohammad Akash',
-    description: 'Automatically sends fun & entertaining styled messages (BD Time)',
+    credits: 'RABBI VAI & ChatGPT (Formatting Update)', // Updated credits
+    description: 'Automatically sends fun & entertaining styled messages (BD Time) with detailed date/time.',
     commandCategory: 'group messenger',
     usages: '[]',
     cooldowns: 3
@@ -55,7 +55,7 @@ const extraLines = [
     "🎯 আজকের লক্ষ্য পূর্ণ করো, কালকে আবার নতুন শুরু।"
 ];
 
-// Function to determine Bengali time period
+// Function to determine Bengali time period (keeping for the message structure)
 function getBengaliPeriod(hour) {
     if (hour >= 4 && hour < 12) return 'সকাল';
     if (hour >= 12 && hour < 15) return 'দুপুর';
@@ -70,42 +70,46 @@ module.exports.onLoad = ({ api }) => {
         const rule = new schedule.RecurrenceRule();
         rule.tz = 'Asia/Dhaka';
         rule.hour = h;
-        rule.minute = 0;
+        rule.minute = 0; // The message will be sent at the top of every hour
 
         schedule.scheduleJob(rule, () => {
             if (!global.data?.allThreadID) return;
 
             const nowMoment = moment().tz('Asia/Dhaka');
             const hour = nowMoment.hour();
-            const minute = nowMoment.format('mm');
             const period = getBengaliPeriod(hour);
 
-            const formattedTime = `${period} ${hour % 12 === 0 ? 12 : hour % 12}:${minute} ${nowMoment.format('A')}`;
+            // Detailed Bengali Time/Date Formatting
+            // Format: দিন, তারিখ মাস বছর (ঘন্টা:মিনিট:সেকেন্ড AM/PM) - e.g., বুধবার, ২২ অক্টোবর ২০২৫ (১০:২১:০০ PM)
+            const formattedDateTime = nowMoment.format('dddd, Do MMMM YYYY (hh:mm:ss A)');
 
             const message = messages[h] || '⏰ সময় চলে যাচ্ছে! কিছু productive করো ✨';
             const extra = extraLines[Math.floor(Math.random() * extraLines.length)];
 
             const finalMessage =
 `👑━━━☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎━━━👑
-🕒 এখন সময়: ${formattedTime}
-${message}
+📅 তারিখ ও সময়: ${formattedDateTime}
+এখন ${period}: ${message}
 
 ${extra}
 👑━━━☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎━━━👑`;
 
             global.data.allThreadID.forEach(threadID => {
-                api.sendMessage(finalMessage, threadID, (error) => {
-                    if (error) {
-                        console.error(`Failed to send message to ${threadID}:`, error);
-                    }
-                });
+                // Ensure threadID is not null/undefined before sending
+                if (threadID) {
+                    api.sendMessage(finalMessage, threadID, (error) => {
+                        if (error) {
+                            console.error(`Failed to send message to ${threadID}:`, error);
+                        }
+                    });
+                }
             });
 
-            console.log(chalk.hex("#00FFFF")(`Scheduled (BDT): ${formattedTime} => ${finalMessage}`));
+            console.log(chalk.hex("#00FFFF")(`Scheduled (BDT): ${formattedDateTime} => ${finalMessage}`));
         });
     }
 };
 
 module.exports.run = () => {
-    // Main logic is in onLoad
+    // Main logic is in onLoad, this function remains empty
 };
