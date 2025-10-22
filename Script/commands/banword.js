@@ -139,7 +139,7 @@ module.exports.run = async function ({ api, event, args }) {
       return api.sendMessage(
         `📜━━━[ BANWORD LIST ]━━━📜\n${group.words.join(", ")}\n\nStatus: ${
           group.enabled ? "🟢 ON" : "🔴 OFF"
-        }\n👑 Credit: Md saim`,
+        }\n👑 Credit: Md rabbi`,
         threadID
       );
 
