@@ -59,7 +59,7 @@ module.exports.handleEvent = async function ({ api, event }) {
       if (count < 3) {
         return api.sendMessage(
           `${emoji}━━━[ ⚠️ সতর্কতা ${count}/3 ]━━━${emoji}\n` +
-            `🚫 নিষিদ্ধ শব্দ শনাক্ত!\n💬 Word: "${word}"\n\n💡 ${line}\n\n👑 Credit: Md saim`,
+            `🚫 নিষিদ্ধ শব্দ শনাক্ত!\n💬 Word: "${word}"\n\n💡 ${line}\n\n👑 Credit: Md rabbi`,
           threadID
         );
       } else {
@@ -67,7 +67,7 @@ module.exports.handleEvent = async function ({ api, event }) {
         try {
           await api.removeUserFromGroup(senderID, threadID);
           return api.sendMessage(
-            `💥━━━[ BAN ALERT ]━━━💥\n👤 ${senderID} কে ৩ বার নিষিদ্ধ শব্দ ব্যবহারের জন্য গ্রুপ থেকে বাদ দেওয়া হয়েছে!\n\n👑 Credit: Md saim`,
+            `💥━━━[ BAN ALERT ]━━━💥\n👤 ${senderID} কে ৩ বার নিষিদ্ধ শব্দ ব্যবহারের জন্য গ্রুপ থেকে বাদ দেওয়া হয়েছে!\n\n👑 Credit: Md rabbi`,
             threadID
           );
         } catch {
@@ -86,7 +86,7 @@ module.exports.run = async function ({ api, event, args }) {
   const data = loadData();
 
   if (!data[threadID])
-    data[threadID] = { enabled: false, words: ["fuck", "sex", "bitch", "nude"] };
+    data[threadID] = { enabled: false, words: ["fuck", "sex", "bitch", "nude", "বালের বট", "মাগি"] };
 
   const option = args[0]?.toLowerCase();
   const group = data[threadID];
@@ -104,7 +104,7 @@ module.exports.run = async function ({ api, event, args }) {
       group.enabled = false;
       saveData(data);
       return api.sendMessage(
-        `🔕━━━[ SYSTEM OFF ]━━━🔕\n❌ Banword System বন্ধ করা হয়েছে!\n👑 Credit: Md saim`,
+        `🔕━━━[ SYSTEM OFF ]━━━🔕\n❌ Banword System বন্ধ করা হয়েছে!\n👑 Credit: Md rabbi`,
         threadID
       );
 
@@ -117,7 +117,7 @@ module.exports.run = async function ({ api, event, args }) {
       group.words.push(newWord);
       saveData(data);
       return api.sendMessage(
-        `🌈 "${newWord}" সফলভাবে নিষিদ্ধ তালিকায় যোগ হয়েছে!\n👑 Credit: Md saim`,
+        `🌈 "${newWord}" সফলভাবে নিষিদ্ধ তালিকায় যোগ হয়েছে!\n👑 Credit: Md rabbi`,
         threadID
       );
 
@@ -131,7 +131,7 @@ module.exports.run = async function ({ api, event, args }) {
       group.words.splice(idx, 1);
       saveData(data);
       return api.sendMessage(
-        `🗑️ "${delWord}" নিষিদ্ধ তালিকা থেকে সরানো হয়েছে!\n👑 Credit: Md saim`,
+        `🗑️ "${delWord}" নিষিদ্ধ তালিকা থেকে সরানো হয়েছে!\n👑 Credit: Md rabbi`,
         threadID
       );
 
@@ -152,7 +152,7 @@ module.exports.run = async function ({ api, event, args }) {
 🗑️ /banword remove <word> — শব্দ বাদ  
 📜 /banword list — নিষিদ্ধ তালিকা দেখো  
 
-👑 Developer: Md saim`,
+👑 Developer: Md rabbi`,
         threadID
       );
   }
