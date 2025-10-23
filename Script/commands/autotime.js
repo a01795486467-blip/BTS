@@ -99,7 +99,7 @@ module.exports.onLoad = function ({ api }) {
       const finalMessage = islamicChat + '\n' + (Array.isArray(nazruld.message) ? nazruld.message.join('\n') : nazruld.message) + `
 
 ━━━━━━━━━━━━━━━━━━  
-👑 𝐁𝐨𝐭 𝐎𝐰𝐧𝐞𝐫 ➠ ☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎  
+👑 𝐁𝐨𝐭 𝐎𝐰𝐧𝐞𝐫 ➠ 𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎  
 
 🌟 𝐂𝐫𝐞𝐚𝐭𝗼𝐫 ━ ☞︎︎︎𝐑𝐀𝐁𝐁𝐢⍟𝐕𝐀𝐈☜︎︎ 🌟  
 ━━━━━━━━━━━━━━━━━━`;
