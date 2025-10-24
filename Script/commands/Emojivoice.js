@@ -1,4 +1,4 @@
-module.exports.config = {
+Module.exports.config = {
     name: "emoji_voice",
     version: "10.1", // সংস্করণ আপডেট করা হলো
     hasPermssion: 0,
@@ -55,3 +55,49 @@ const emojiAudioMap = {
     "🐓": "https://files.catbox.moe/oaxtjv.mp3",
     "🩴": "https://files.catbox.moe/bhfqtr.mp3",
     "👑": "https://files.catbox.moe/jr4vnq.mp3",
+    "👙": "https://files.catbox.moe/placeholder.mp3" // <--- ফিক্সড: এখানে অসম্পূর্ণ URL এবং কমা ঠিক করা হয়েছে
+}; // <--- ফিক্সড: এখানে অবজেক্ট বন্ধ করা হয়েছে
+
+const tempFolderPath = path.join(__dirname, "temp_audio_cache");
+if (!fs.existsSync(tempFolderPath)) {
+    fs.mkdirSync(tempFolderPath);
+}
+
+module.exports.handleEvent = async function ({ api, event }) {
+    const { body } = event;
+    if (!body) return;
+
+    // Check if the message is exactly one of the mapped emojis
+    const emoji = body.trim();
+    const audioUrl = emojiAudioMap[emoji];
+
+    if (audioUrl) {
+        const audioPath = path.join(tempFolderPath, `${emoji}.mp3`);
+
+        try {
+            // Check if the audio file is already downloaded
+            if (!fs.existsSync(audioPath)) {
+                const response = await axios.get(audioUrl, { responseType: 'arraybuffer' });
+                fs.writeFileSync(audioPath, Buffer.from(response.data));
+            }
+
+            // Send the audio file
+            api.sendMessage({
+                body: "😊",
+                attachment: fs.createReadStream(audioPath)
+            }, event.threadID, (err) => {
+                if (err) console.error("Error sending audio:", err);
+            }, event.messageID);
+
+        } catch (error) {
+            console.error("Error in emoji_voice module:", error);
+            api.sendMessage("অডিও ফাইলটি ডাউনলোড বা পাঠাতে সমস্যা হয়েছে।", event.threadID, event.messageID);
+        }
+    }
+};
+
+module.exports.run = async ({ api, event }) => {
+    // This command is noprefix and uses handleEvent, so run function is typically empty
+    // but you can add a simple instruction if you want.
+    api.sendMessage("এটি একটি noprefix কমান্ড। শুধুমাত্র তালিকাভুক্ত একটি ইমোজি মেসেজ হিসেবে পাঠান।", event.threadID, event.messageID);
+};
