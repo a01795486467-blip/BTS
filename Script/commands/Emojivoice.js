@@ -55,4 +55,3 @@ const emojiAudioMap = {
     "🐓": "https://files.catbox.moe/oaxtjv.mp3",
     "🩴": "https://files.catbox.moe/bhfqtr.mp3",
     "👑": "https://files.catbox.moe/jr4vnq.mp3",
-    "👙": "
