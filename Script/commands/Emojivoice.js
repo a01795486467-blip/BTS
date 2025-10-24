@@ -94,17 +94,14 @@ const emojiAudioMap = {
  "🤩": "https://files.catbox.moe/bf6z44.mp3",
  "🫡": "https://files.catbox.moe/6jo967.mp3",
  "👹": "https://files.catbox.moe/scsxhj.mp3",
- "🫂": "https://files.catbox.moe/4315xb.mp3", // <-- Corrected this line
+ "🫂": "https://files.catbox.moe/4315xb.mp3", // **← এই লাইনেই সমস্যা ছিল, ঠিক করে দেওয়া হয়েছে**
 };
 
 
 module.exports.handleEvent = async ({ api, event }) => {
  const { threadID, messageID, body } = event;
 
- // Only process messages that consist of exactly 1 or 2 characters (likely a single or double emoji)
- // The original code was `body.length > 2`, which means it would process 1 and 2 character messages,
- // but this check is a bit too strict and can be improved. However, I will keep the original logic
- // as the user requested to fix the broken file, not rewrite the logic.
+ // মেসেজটি শুধু ১ বা ২ অক্ষর/ইমোজি হলে কাজ করবে
  if (!body || body.length > 2) return;
 
 
@@ -121,54 +118,45 @@ module.exports.handleEvent = async ({ api, event }) => {
 
 
  try {
- // Check if the file already exists in cache to prevent unnecessary download
- if (fs.existsSync(filePath)) {
-  api.sendMessage({
-   attachment: fs.createReadStream(filePath)
-  }, threadID, null, messageID); // Send immediately from cache
-  return;
- }
+  // **ক্যাশিং যোগ করা হয়েছে:** ফাইলটি ইতিমধ্যে ডাউনলোড করা থাকলে দ্রুত পাঠাবে
+  if (fs.existsSync(filePath)) {
+   api.sendMessage({
+    attachment: fs.createReadStream(filePath)
+   }, threadID, null, messageID);
+   return;
+  }
  
- // If file does not exist, download it
- const response = await axios({
-  method: 'GET',
-  url: audioUrl,
-  responseType: 'stream'
- });
+  // ফাইল ডাউনলোড করা
+  const response = await axios({
+   method: 'GET',
+   url: audioUrl,
+   responseType: 'stream'
+  });
 
 
- const writer = fs.createWriteStream(filePath);
- response.data.pipe(writer);
+  const writer = fs.createWriteStream(filePath);
+  response.data.pipe(writer);
 
 
- writer.on('finish', () => {
-  api.sendMessage({
-   attachment: fs.createReadStream(filePath)
-  }, threadID, () => {
-   // The original logic deletes the file after sending. 
-   // To enable caching, I've commented out the deletion part
-   /*
-   fs.unlink(filePath, (err) => {
-    if (err) console.error("Error deleting file:", err);
-   });
-   */
-  }, messageID);
- });
+  writer.on('finish', () => {
+   api.sendMessage({
+    attachment: fs.createReadStream(filePath)
+   }, threadID, null, messageID); 
+   // ফাইলটি ক্যাশে রাখার জন্য ডিলিট করা হচ্ছে না।
+  });
 
 
- writer.on('error', (err) => {
-  console.error("Error writing file:", err);
-  // Delete the partial file on error
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  api.sendMessage("ইমুজি দিয়ে লাভ নাই\nযাও মুড়ি খাও জান😘", threadID, messageID);
- });
+  writer.on('error', (err) => {
+   console.error("Error writing file:", err);
+   if (fs.existsSync(filePath)) fs.unlinkSync(filePath); // আংশিক ফাইল ডিলিট
+   api.sendMessage("ইমুজি দিয়ে লাভ নাই\nযাও মুড়ি খাও জান😘", threadID, messageID);
+  });
 
 
  } catch (error) {
-  console.error("Error downloading audio:", error);
-  // Ensure file is not left behind on download error
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  api.sendMessage("ইমুজি দিয়ে লাভ নাই\nযাও মুড়ি খাও জান😘", threadID, messageID);
+   console.error("Error downloading audio:", error);
+   if (fs.existsSync(filePath)) fs.unlinkSync(filePath); // আংশিক ফাইল ডিলিট
+   api.sendMessage("ইমুজি দিয়ে লাভ নাই\nযাও মুড়ি খাও জান😘", threadID, messageID);
  }
 };
 
